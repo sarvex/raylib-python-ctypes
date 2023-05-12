@@ -51,7 +51,7 @@ def main():
             ZOOM_INCREMENT = 0.125
 
             camera.zoom += (wheel * ZOOM_INCREMENT)
-            if camera.zoom < ZOOM_INCREMENT: camera.zoom = ZOOM_INCREMENT
+            camera.zoom = max(camera.zoom, ZOOM_INCREMENT)
         # ----------------------------------------------------------------------------------
 
         # Draw
@@ -78,7 +78,7 @@ def main():
         draw_text(b"Mouse right button drag to move, mouse wheel to zoom", 10, 10, 20, WHITE)
 
         end_drawing()
-        # ----------------------------------------------------------------------------------
+            # ----------------------------------------------------------------------------------
 
     # De-Initialization
     # ----------------------------------------------------------------------------------

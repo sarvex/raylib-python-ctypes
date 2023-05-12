@@ -86,7 +86,7 @@ def main():
             #  Buffer a new command
             transfert_buffer.commands[transfert_buffer.count].x = int(get_mouse_x() - brush_size / 2)
             transfert_buffer.commands[transfert_buffer.count].y = int(get_mouse_y() - brush_size / 2)
-            transfert_buffer.commands[transfert_buffer.count].w = int(brush_size)
+            transfert_buffer.commands[transfert_buffer.count].w = brush_size
             transfert_buffer.commands[transfert_buffer.count].enabled = is_mouse_button_down(MouseButton.MOUSE_BUTTON_LEFT)
             transfert_buffer.count += 1
 
@@ -111,11 +111,7 @@ def main():
             rl_compute_shader_dispatch(int(GOL_WIDTH / 16), int(GOL_WIDTH / 16), 1)
             rl_disable_shader()
 
-            #  ssbo_a <-> ssbo_b
-            temp = ssbo_a
-            ssbo_a = ssbo_b
-            ssbo_b = temp
-
+            ssbo_a, ssbo_b = ssbo_b, ssbo_a
         rl_bind_shader_buffer(ssbo_a, 1)
         set_shader_value(gol_render_shader, res_uniform_loc, pointer(resolution), ShaderUniformDataType.SHADER_UNIFORM_VEC2)
         # ----------------------------------------------------------------------------------
@@ -136,7 +132,7 @@ def main():
         draw_fps(get_screen_width() - 100, 10)
 
         end_drawing()
-        # ----------------------------------------------------------------------------------
+            # ----------------------------------------------------------------------------------
 
     #  De-Initialization
     # --------------------------------------------------------------------------------------

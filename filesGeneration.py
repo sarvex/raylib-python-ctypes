@@ -24,12 +24,10 @@ wrapped_functions_names_stub = []
 
 if sys.platform == 'linux':
 	_raylib_dynamic_library_name = 'libraylib.so'
-else:  # windows
+	_raypyc_extra_functions_name = 'raypyc_extra_functions.so'
+else:
 	_raylib_dynamic_library_name = 'raylib.dll'
 
-if sys.platform == 'linux':
-	_raypyc_extra_functions_name = 'raypyc_extra_functions.so'
-else:  # windows
 	_raypyc_extra_functions_name = 'raypyc_extra_functions.dll'
 
 _raylib_dynamic_library = ctypes.cdll.LoadLibrary(str(DYNAMIC_LIBRARIES_PATH / _raylib_dynamic_library_name))
@@ -53,10 +51,7 @@ def underscore(_string: str) -> str:
 
 
 def is_string_contained_in_list(_string: str, _list: List[str]) -> bool:
-	for _item in _list:
-		if _item in _string:
-			return True
-	return False
+	return any(_item in _string for _item in _list)
 
 
 def generate_file(file_path: WindowsPath) -> None:
@@ -110,7 +105,7 @@ def convert_c_type_to_python_type(c_type_string: str) -> str:
 		return "None"
 
 	if c_type_string in c_string_to_ctypes_string:  # "regular" value not a pointer or an array
-		return "ctypes." + c_string_to_ctypes_string[c_type_string]
+		return f"ctypes.{c_string_to_ctypes_string[c_type_string]}"
 
 	if is_array and pointer_level > 0:  # array of pointers to structures
 		type_of_array = c_type_string.split('[')[0]
@@ -120,12 +115,12 @@ def convert_c_type_to_python_type(c_type_string: str) -> str:
 			return f"ctypes.{c_string_to_ctypes_string[type_of_array]} * {array_size}"
 		if type_of_array_without_pointers in c_string_to_ctypes_string:  # basic type pointer(probably double+ pointer level) (int**, char**, float**, ...)
 			type_of_array_end = c_string_to_ctypes_string[type_of_array_without_pointers]
-			for i in range(pointer_level):
+			for _ in range(pointer_level):
 				type_of_array_end = f"ctypes.POINTER({type_of_array_end})"
 			return f"ctypes.{type_of_array_end} * {array_size}"
 		else:  # a struct array pointer level 1+ or just a pointer level 1
 			type_of_array_end = type_of_array_without_pointers
-			for i in range(pointer_level):
+			for _ in range(pointer_level):
 				type_of_array_end = f"ctypes.POINTER({type_of_array_end})"
 			return f"{type_of_array_end} * {array_size}"
 	elif is_array:
@@ -137,37 +132,38 @@ def convert_c_type_to_python_type(c_type_string: str) -> str:
 			return f"{type_of_array} * {array_size}"
 	elif pointer_level > 0:
 		type_without_pointers = c_type_string.replace('*', '')
-		if c_type_string in c_string_to_ctypes_string:  # basic type pointer (int*, char*, float*, ...)
-			return f"ctypes.{c_string_to_ctypes_string[c_type_string]}"
 		if type_without_pointers in c_string_to_ctypes_string:  # basic type pointer(probably double+ pointer level) (int**, char**, float**, ...)
-			type_of_pointer_end = "ctypes." + c_string_to_ctypes_string[type_without_pointers]
-			for i in range(pointer_level):
-				type_of_pointer_end = f"ctypes.POINTER({type_of_pointer_end})"
-			return f"{type_of_pointer_end}"
+			type_of_pointer_end = (
+				f"ctypes.{c_string_to_ctypes_string[type_without_pointers]}"
+			)
 		else:  # a struct pointer level 1+ or just a pointer level 1
 			type_of_pointer_end = c_type_string.replace('*', '')
-			for i in range(pointer_level):
-				type_of_pointer_end = f"ctypes.POINTER({type_of_pointer_end})"
-			return f"{type_of_pointer_end}"
-
+		for _ in range(pointer_level):
+			type_of_pointer_end = f"ctypes.POINTER({type_of_pointer_end})"
+		return f"{type_of_pointer_end}"
 	return c_type_string  # a struct
 
 
 # -----------------------------------------
 def generate_color_code(define_data: Dict[str, Union[str, float, int]], for_stub: bool = False) -> str:
-	if define_data['type'] == "COLOR":
-		ints_array_string = define_data['value'].split('{')[1].split('}')[0].replace(' ', '').split(',')
-		temp = f"{define_data['name']}: raypyc.structures.Color"
-		if not for_stub:
-			temp += f" = raypyc.structures.Color({ints_array_string[0]}, {ints_array_string[1]}, {ints_array_string[2]}, {ints_array_string[3]})"
-		temp += f"{('  # ' + define_data['description']) if define_data['description'] != '' else ''}"
-		return temp
-	else:
+	if define_data['type'] != "COLOR":
 		return ""
+	ints_array_string = define_data['value'].split('{')[1].split('}')[0].replace(' ', '').split(',')
+	temp = f"{define_data['name']}: raypyc.structures.Color"
+	if not for_stub:
+		temp += f" = raypyc.structures.Color({ints_array_string[0]}, {ints_array_string[1]}, {ints_array_string[2]}, {ints_array_string[3]})"
+	temp += f"{('  # ' + define_data['description']) if define_data['description'] != '' else ''}"
+	return temp
 
 
 def generate_define_code(define_data: Dict[str, Union[str, float, int]], for_stub: bool = False) -> str:
-	if not define_data['type'] in ["FLOAT_MATH", "FLOAT", "DOUBLE", "STRING", "INT"]:
+	if define_data['type'] not in [
+		"FLOAT_MATH",
+		"FLOAT",
+		"DOUBLE",
+		"STRING",
+		"INT",
+	]:
 		return ""
 
 	elif define_data['type'] == "FLOAT_MATH":
@@ -270,7 +266,7 @@ def generate_enum_code(enum_data, for_stub=False):
 
 def generate_function_signature_code(function_data: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
 	function_string = f"def {function_data['name']}("
-	if 'params' in function_data.keys():  # only return stuff
+	if 'params' in function_data:  # only return stuff
 		for param in function_data['params']:
 			function_string += f"{param['name']}: {convert_c_type_to_python_type(param['type'])}, "
 
@@ -340,15 +336,17 @@ def generate_structs_aliases_code(structs_api: List[Union[Dict[str, Union[str, L
 			_string += struct_string_logic
 
 			for alias in aliases_api:
-				if struct['name'] == alias['type']:
-					if alias['name'] not in _wrapped_structures_names:
-						alias_string_logic = ""
-						alias_string_logic += generate_alias_code(alias['name'], struct['name'])
-						if alias_string_logic != "":
-							_wrapped_structures_names.append(alias['name'])
-						alias_string_logic += "\n\n"
+				if (
+					struct['name'] == alias['type']
+					and alias['name'] not in _wrapped_structures_names
+				):
+					alias_string_logic = ""
+					alias_string_logic += generate_alias_code(alias['name'], struct['name'])
+					if alias_string_logic != "":
+						_wrapped_structures_names.append(alias['name'])
+					alias_string_logic += "\n\n"
 
-						_string += alias_string_logic
+					_string += alias_string_logic
 
 	return _string
 
@@ -360,14 +358,14 @@ def generate_structures_dictionary_code(wrapped_structures: List[str], for_stub:
 			dictionary_sting += f"\t\"{struct}\": {struct},\n"
 		dictionary_sting = dictionary_sting[:-2]
 		dictionary_sting += "\n}\n"
-		return dictionary_sting
 	else:
 		dictionary_sting = "__structs: dict[str, Type["
 		for struct in wrapped_structures:
 			dictionary_sting += f"{struct} | "
 		dictionary_sting = dictionary_sting[:-3]
 		dictionary_sting += "]] = {\n\t...\n}\n"
-		return dictionary_sting
+
+	return dictionary_sting
 
 
 def generate_enums_code(enums_api, for_stub=False):
@@ -395,9 +393,19 @@ def check_for_functions_that_can_wrap(functions_api: List[Union[Any, Dict[str, U
 					do_wrapper_this_function = False
 					break
 
-		if do_wrapper_this_function:
-			if is_string_contained_in_list(function['returnType'], ['Sound', 'AudioCallback', 'SaveFileTextCallback', 'LoadFileTextCallback', 'TraceLogCallback', 'LoadFileDataCallback', 'SaveFileDataCallback']):
-				do_wrapper_this_function = False
+		if do_wrapper_this_function and is_string_contained_in_list(
+			function['returnType'],
+			[
+				'Sound',
+				'AudioCallback',
+				'SaveFileTextCallback',
+				'LoadFileTextCallback',
+				'TraceLogCallback',
+				'LoadFileDataCallback',
+				'SaveFileDataCallback',
+			],
+		):
+			do_wrapper_this_function = False
 
 		if do_wrapper_this_function:
 			functions_that_can_be_wrap.append(function)

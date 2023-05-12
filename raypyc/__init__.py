@@ -73,13 +73,13 @@ def evaluate_c_type_string_to_python_type(c_type_string):
 
 		if type_of_array_without_pointers_string in c_string_to_ctypes_string:  # basic type pointer(probably double+ pointer level) (int**, char**, float**, ...)
 			type_of_array_end = c_string_to_ctypes_string[type_of_array_without_pointers_string]
-			for i in range(pointer_level):
+			for _ in range(pointer_level):
 				type_of_array_end = ctypes.POINTER(type_of_array_end)
 			return type_of_array_end * array_size
 
 		if type_of_array_without_pointers_string in raypyc.structures.__structs:  # a struct array pointer level 1+ or just a pointer level 1
 			type_of_array_end = raypyc.structures.__structs[type_of_array_without_pointers_string]
-			for i in range(pointer_level):
+			for _ in range(pointer_level):
 				type_of_array_end = ctypes.POINTER(type_of_array_end)
 			return type_of_array_end * array_size
 
@@ -105,13 +105,13 @@ def evaluate_c_type_string_to_python_type(c_type_string):
 
 		if type_without_pointers_string in c_string_to_ctypes_string:  # basic type pointer(probably double+ pointer level) (int**, char**, float**, ...)
 			type_of_pointer_end = c_string_to_ctypes_string[type_without_pointers_string]
-			for i in range(pointer_level):
+			for _ in range(pointer_level):
 				type_of_pointer_end = ctypes.POINTER(type_of_pointer_end)
 			return type_of_pointer_end
 
 		if type_without_pointers_string in raypyc.structures.__structs:  # a struct pointer level 1+ or just a pointer level 1
 			type_of_pointer_end = raypyc.structures.__structs[type_without_pointers_string]
-			for i in range(pointer_level):
+			for _ in range(pointer_level):
 				type_of_pointer_end = ctypes.POINTER(type_of_pointer_end)
 			return type_of_pointer_end
 
@@ -127,19 +127,12 @@ def evaluate_c_type_string_to_python_type(c_type_string):
 
 
 def is_string_contained_in_list(_string: str, _list: list[str]) -> bool:
-	for _item in _list:
-		if _item in _string:
-			return True
-	return False
+	return any(_item in _string for _item in _list)
 
 
 # get numbers from string
 def get_numbers_from_string(string):
-	ints = []
-	for s in string.split(' '):
-		if s.isdigit():
-			ints.append(int(s))
-	return ints
+	return [int(s) for s in string.split(' ') if s.isdigit()]
 
 
 def underscore(_string):

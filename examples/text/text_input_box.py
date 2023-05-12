@@ -42,11 +42,7 @@ def main():
     while not window_should_close():  # Detect window close button or ESC key
         # Update
         # ----------------------------------------------------------------------------------
-        if check_collision_point_rec(get_mouse_position(), text_box):
-            mouse_on_text = True
-        else:
-            mouse_on_text = False
-
+        mouse_on_text = bool(check_collision_point_rec(get_mouse_position(), text_box))
         if mouse_on_text:
             # Set the window's cursor to the I-Beam
             set_mouse_cursor(MouseCursor.MOUSE_CURSOR_IBEAM)
@@ -66,8 +62,7 @@ def main():
 
             if is_key_pressed(KeyboardKey.KEY_BACKSPACE):
                 letter_count -= 1
-                if letter_count < 0:
-                    letter_count = 0
+                letter_count = max(letter_count, 0)
                 name[letter_count] = b'\0'
         else:
             set_mouse_cursor(MouseCursor.MOUSE_CURSOR_DEFAULT)
@@ -105,7 +100,7 @@ def main():
                 draw_text(b"Press BACKSPACE to delete chars...", 230, 300, 20, GRAY)
 
         end_drawing()
-        # ----------------------------------------------------------------------------------
+            # ----------------------------------------------------------------------------------
 
     # De-Initialization
     # ----------------------------------------------------------------------------------

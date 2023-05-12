@@ -37,10 +37,7 @@ def main():
     # Load bunny texture
     tex_bunny = load_texture(b"resources/wabbit_alpha.png")
 
-    bunnies = []
-    for i in range(0, MAX_BUNNIES):
-        bunnies.append(Bunny())
-
+    bunnies = [Bunny() for _ in range(0, MAX_BUNNIES)]
     bunnies_count = 0  # Bunnies counter
 
     set_target_fps(60)  # Set our game to run at 60 frames-per-second
@@ -52,7 +49,7 @@ def main():
         # ----------------------------------------------------------------------------------
         if is_mouse_button_down(MouseButton.MOUSE_BUTTON_LEFT):
             # Create more bunnies
-            for i in range(0, 100):
+            for _ in range(0, 100):
                 if bunnies_count < MAX_BUNNIES:
                     bunnies[bunnies_count].position = get_mouse_position()
                     bunnies[bunnies_count].speed.x = get_random_value(-250, 250) / 60.0
@@ -67,7 +64,10 @@ def main():
 
             if bunnies[i].position.x + tex_bunny.width / 2 > SCREEN_WIDTH or bunnies[i].position.x + tex_bunny.width / 2 < 0:
                 bunnies[i].speed.x *= -1
-            if bunnies[i].position.y + tex_bunny.height / 2 > SCREEN_HEIGHT or bunnies[i].position.y + tex_bunny.height / 2 - 40 < 0:
+            if (
+                bunnies[i].position.y + tex_bunny.height / 2 > SCREEN_HEIGHT
+                or bunnies[i].position.y + tex_bunny.height / 2 < 40
+            ):
                 bunnies[i].speed.y *= -1
         # ----------------------------------------------------------------------------------
 
@@ -95,7 +95,7 @@ def main():
         draw_fps(10, 10)
 
         end_drawing()
-        # ----------------------------------------------------------------------------------
+            # ----------------------------------------------------------------------------------
 
     # De-Initialization
     # ----------------------------------------------------------------------------------
