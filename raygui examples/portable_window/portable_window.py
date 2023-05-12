@@ -38,10 +38,13 @@ def main():
         # ----------------------------------------------------------------------------------
         mouse_position = get_mouse_position()
 
-        if is_mouse_button_pressed(MouseButton.MOUSE_BUTTON_LEFT):
-            if check_collision_point_rec(mouse_position, Rectangle(0, 0, SCREEN_WIDTH, 20)):
-                drag_window = True
-                pan_offset = mouse_position
+        if is_mouse_button_pressed(
+            MouseButton.MOUSE_BUTTON_LEFT
+        ) and check_collision_point_rec(
+            mouse_position, Rectangle(0, 0, SCREEN_WIDTH, 20)
+        ):
+            drag_window = True
+            pan_offset = mouse_position
 
         if drag_window:
             window_position.x += mouse_position.x - pan_offset.x

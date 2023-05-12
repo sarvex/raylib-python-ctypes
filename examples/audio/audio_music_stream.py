@@ -53,7 +53,7 @@ def main():
         # Get normalized time played for current music stream
         timePlayed = get_music_time_played(music) / get_music_time_length(music)
 
-        if timePlayed > 1.0: timePlayed = 1.0  # Make sure time played is no longer than music
+        timePlayed = min(timePlayed, 1.0)
 
         # Draw
         # ----------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ def main():
         draw_text(b"PRESS P TO PAUSE/RESUME MUSIC", 208, 280, 20, LIGHTGRAY)
 
         end_drawing()
-        # ----------------------------------------------------------------------------------
+            # ----------------------------------------------------------------------------------
 
     # De-Initialization
     # ----------------------------------------------------------------------------------

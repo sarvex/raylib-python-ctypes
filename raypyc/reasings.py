@@ -124,22 +124,22 @@ def ease_sine_in_out(t: float, b: float, c: float, d: float) -> float:
 def ease_circ_in(t: float, b: float, c: float, d: float) -> float:
     """Ease: Circular In"""
     t /= d
-    return -c * (math.sqrt(1.0 - t * t) - 1.0) + b
+    return -c * (math.sqrt(1.0 - t**2) - 1.0) + b
 
 
 def ease_circ_out(t: float, b: float, c: float, d: float) -> float:
     """Ease: Circular Out"""
     t = t / d - 1.0
-    return c * math.sqrt(1.0 - t * t) + b
+    return c * math.sqrt(1.0 - t**2) + b
 
 
 def ease_circ_in_out(t: float, b: float, c: float, d: float) -> float:
     """Ease: Circular In Out"""
     t /= d / 2.0
     if t < 1.0:
-        return -c / 2.0 * (math.sqrt(1.0 - t * t) - 1.0) + b
+        return -c / 2.0 * (math.sqrt(1.0 - t**2) - 1.0) + b
     t -= 2.0
-    return c / 2.0 * (math.sqrt(1.0 - t * t) + 1.0) + b
+    return c / 2.0 * (math.sqrt(1.0 - t**2) + 1.0) + b
 
 
 # Cubic Easing functions
@@ -153,7 +153,7 @@ def ease_cubic_in(t: float, b: float, c: float, d: float) -> float:
 def ease_cubic_out(t: float, b: float, c: float, d: float) -> float:
     """Ease: Cubic Out"""
     t = t / d - 1.0
-    return c * (t * t * t + 1.0) + b
+    return c * (t**2 * t + 1.0) + b
 
 
 def ease_cubic_in_out(t: float, b: float, c: float, d: float) -> float:
@@ -162,7 +162,7 @@ def ease_cubic_in_out(t: float, b: float, c: float, d: float) -> float:
     if t < 1.0:
         return c / 2.0 * t * t * t + b
     t -= 2.0
-    return c / 2.0 * (t * t * t + 2.0) + b
+    return c / 2.0 * (t**2 * t + 2.0) + b
 
 
 # Quadratic Easing functions
@@ -183,7 +183,7 @@ def ease_quad_in_out(t: float, b: float, c: float, d: float) -> float:
     """Ease: Quadratic In Out"""
     t /= d / 2
     if t < 1:
-        return ((c / 2) * (t * t)) + b
+        return c / 2 * t**2 + b
 
     return -c / 2.0 * (((t - 1.0) * (t - 3.0)) - 1.0) + b
 
@@ -217,14 +217,14 @@ def ease_back_in(t: float, b: float, c: float, d: float) -> float:
     s: float = 1.70158
     t /= d
     post_fix: float = t
-    return c * post_fix * t * ((s + 1.0) * t - s) + b
+    return c * post_fix * post_fix * ((s + 1.0) * post_fix - s) + b
 
 
 def ease_back_out(t: float, b: float, c: float, d: float) -> float:
     """Ease: Back Out"""
     s: float = 1.70158
     t = t / d - 1.0
-    return c * (t * t * ((s + 1.0) * t + s) + 1.0) + b
+    return c * (t**2 * ((s + 1.0) * t + s) + 1.0) + b
 
 
 def ease_back_in_out(t: float, b: float, c: float, d: float) -> float:
@@ -234,12 +234,12 @@ def ease_back_in_out(t: float, b: float, c: float, d: float) -> float:
 
     if t < 1.0:
         s *= 1.525
-        return c / 2.0 * (t * t * ((s + 1.0) * t - s)) + b
+        return c / 2.0 * (t**2 * ((s + 1.0) * t - s)) + b
 
     t -= 2.0
     post_fix: float = t
     s *= 1.525
-    return c / 2.0 * (post_fix * t * ((s + 1.0) * t + s) + 2.0) + b
+    return c / 2.0 * (post_fix**2 * ((s + 1.0) * post_fix + s) + 2.0) + b
 
 
 # Bounce Easing functions
@@ -252,15 +252,15 @@ def ease_bounce_out(t: float, b: float, c: float, d: float) -> float:
     elif t < 2.0 / 2.75:
         t -= 1.5 / 2.75
         post_fix: float = t
-        return c * (7.5625 * post_fix * t + 0.75) + b
+        return c * (7.5625 * post_fix * post_fix + 0.75) + b
     elif t < 2.5 / 2.75:
         t -= 2.25 / 2.75
         post_fix: float = t
-        return c * (7.5625 * post_fix * t + 0.9375) + b
+        return c * (7.5625 * post_fix * post_fix + 0.9375) + b
     else:
         t -= 2.625 / 2.75
         post_fix: float = t
-        return c * (7.5625 * post_fix * t + 0.984375) + b
+        return c * (7.5625 * post_fix * post_fix + 0.984375) + b
 
 
 def ease_bounce_in(t: float, b: float, c: float, d: float) -> float:
@@ -303,7 +303,13 @@ def ease_elastic_out(t: float, b: float, c: float, d: float) -> float:
     a: float = c
     s: float = p / 4.0
 
-    return a * math.pow(2.0, -10.0 * t) * math.sin((t * d - s) * (2.0 * math.pi) / p) + c + b
+    return (
+        a
+        * math.pow(2.0, -10.0 * t)
+        * math.sin((t * d - s) * (2.0 * math.pi) / p)
+        + a
+        + b
+    )
 
 
 def ease_elastic_in_out(t: float, b: float, c: float, d: float) -> float:
@@ -324,4 +330,4 @@ def ease_elastic_in_out(t: float, b: float, c: float, d: float) -> float:
     t -= 1.0
     post_fix: float = a * math.pow(2.0, -10.0 * t)
 
-    return post_fix * math.sin((t * d - s) * (2.0 * math.pi) / p) * 0.5 + c + b
+    return post_fix * math.sin((t * d - s) * (2.0 * math.pi) / p) * 0.5 + a + b

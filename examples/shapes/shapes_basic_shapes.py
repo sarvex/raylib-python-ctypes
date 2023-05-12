@@ -39,9 +39,9 @@ def main():
         draw_text(b"some basic shapes available on raylib", 20, 20, 20, DARKGRAY)
 
         # Circle shapes and lines
-        draw_circle(int(SCREEN_WIDTH / 5), 120, 35, DARKBLUE)
-        draw_circle_gradient(int(SCREEN_WIDTH / 5), 220, 60, GREEN, SKYBLUE)
-        draw_circle_lines(int(SCREEN_WIDTH / 5), 340, 80, DARKBLUE)
+        draw_circle(SCREEN_WIDTH // 5, 120, 35, DARKBLUE)
+        draw_circle_gradient(SCREEN_WIDTH // 5, 220, 60, GREEN, SKYBLUE)
+        draw_circle_lines(SCREEN_WIDTH // 5, 340, 80, DARKBLUE)
 
         # Rectangle shapes and lines
         draw_rectangle(int(SCREEN_WIDTH / 4 * 2 - 60), 100, 120, 60, RED)
@@ -66,7 +66,7 @@ def main():
         # this way, all LINES are rendered in a single draw pass
         draw_line(18, 42, SCREEN_WIDTH - 18, 42, BLACK)
         end_drawing()
-        # ----------------------------------------------------------------------------------
+            # ----------------------------------------------------------------------------------
 
     # De-Initialization
     # ----------------------------------------------------------------------------------

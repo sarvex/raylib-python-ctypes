@@ -26,12 +26,10 @@ class ast:
 class ifdef(ast):
     def evaluate(self, flags):
         func = self.params[0].strip()
-        negate = False
-        if func == "#ifndef": negate = True
+        negate = func == "#ifndef"
         key = self.params[1].strip()
         test = key in flags.keys() and flags[key] != ""
-        if negate: return not test
-        return test
+        return not test if negate else test
 
     def expand(self, flags, nest):
         result = ""
@@ -91,7 +89,8 @@ class Preprocessor():
         self.index = 0
         result = ast(children=[])
         self.preprocessLines(lines, result)
-        if self.index < len(lines) and self.index >= 0: raise Exception("error parsing, failed at: " + str(self.index))
+        if self.index < len(lines) and self.index >= 0:
+            raise Exception(f"error parsing, failed at: {self.index}")
         return result.expand(self.flags, 0)  # self.expand(result.children)
 
 
@@ -116,7 +115,7 @@ def preprocess():
         fname = i.split("/")[-1]
 
         output = Preprocessor({}).preprocessFile(i)
-        outHeader = "tmp/" + fname + ".preprocessed"
+        outHeader = f"tmp/{fname}.preprocessed"
         if not os.path.exists(outHeader):
             with open(outHeader, "x"): pass
         with open(outHeader, "w") as r:
